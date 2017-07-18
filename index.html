@@ -1,0 +1,78 @@
+<HTML>
+    <HEAD>
+        <script src="/socket.io/socket.io.js"></script>
+        <style>
+            ul#ctrlPanel li {
+                display:inline;
+            }
+        </style>
+        <script>
+            var socket = io.connect();
+            function publishControl(target_machine,target_node,control_state){
+                var JSON = {
+                    "target_machine" : target_machine,
+                    "target_node" : target_node,
+                    "control_state" : control_state
+                };
+                socket.emit("publishControl", JSON);
+            }
+
+            function extractMachineIDandNodeID(ID){
+                var index = ID.lastIndexOf("N");
+                var machineID = ID;
+                var nodeID = "-1";
+                if(index != -1){
+                    machineID = ID.substr(0,index);
+                    nodeID = ID.substr(index+1);
+                }
+                var JSON = {
+                    "target_machine" : machineID,
+                    "target_node" : nodeID
+                };
+                return JSON;
+            }
+
+            function publishControlFromSearch(control_state){
+                var text = document.getElementById('ID').value;
+                var json = extractMachineIDandNodeID(text);
+                publishControl(json.target_machine,json.target_node,control_state);
+            }
+
+            socket.on('status', function(data){
+                //TODO
+                /*
+                console.log(JSON.stringify(data));
+                updateHtml(data.id,data.node_status)
+                */
+            });
+
+            function updateHtml(machineID, nodes){
+                var div = document.getElementById('data');
+                div.innerHTML += "<b>" + machineID + "</b></br>";
+                div.innerHTML += "<table>";
+               
+                for(i=0; i<nodes.length; i++){
+                    div.innerHTML += "<tr><td>Node " + i + " </td></tr>";
+                }
+                div.innerHTML += "</table>";
+            }
+            
+        </script>
+    </HEAD>
+    <BODY>
+        <center>
+            <H1>Dev Manager Debugging tool</H1>
+            <ul id="ctrlPanel" style="display:inline;">
+                <li><input type="text" id="ID"></li>
+                <li><button type="button" onClick="publishControlFromSearch(1)">On</button></li>
+                <li><button type="button" onClick="publishControlFromSearch(0)">Off</button></li>
+                <li><button type="button" onClick="publishControlFromSearch(2)">Restart</button></li>
+            </ul> 
+        </center>
+        <!-- TODO
+        <div id="data">
+            <h2>Subscribed data</h2>-->
+
+        </div>
+    </BODY>
+</HTML>
